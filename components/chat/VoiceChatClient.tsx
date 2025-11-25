@@ -27,6 +27,7 @@ import { chatSupervisorScenario } from "@/lib/agentConfigs/chatSupervisor";
 import { customerServiceRetailCompanyName } from "@/lib/agentConfigs/customerServiceRetail";
 import { chatSupervisorCompanyName } from "@/lib/agentConfigs/chatSupervisor";
 import { simpleHandoffScenario } from "@/lib/agentConfigs/simpleHandoff";
+import addictionCoachScenario from "@/lib/agentConfigs/addictionCoach";
 
 // Map used by connect logic for scenarios defined via the SDK.
 const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
@@ -38,7 +39,6 @@ const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
 
 import useAudioDownload from "@/hooks/useAudioDownload";
 import { useHandleSessionHistory } from "@/hooks/useHandleSessionHistory";
-import addictionCoachScenario from "@/lib/agentConfigs/addictionCoach";
 
 function VoiceChatClient() {
     const searchParams = useSearchParams()!;
@@ -448,7 +448,7 @@ function VoiceChatClient() {
     const agentSetKey = searchParams.get("agentConfig") || "default";
 
     return (
-        <div className="text-base flex flex-col h-screen text-gray-800 relative">
+        <div className="text-base flex flex-col min-h-[calc(100vh-64px)] text-gray-800 relative">
             <div className="p-5 text-lg font-semibold flex justify-between items-center">
                 <div className="flex items-center">
                     <label className="flex items-center text-base gap-1 mr-2 font-medium">

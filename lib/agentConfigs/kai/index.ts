@@ -1,47 +1,8 @@
-import {RealtimeAgent, tool} from '@openai/agents/realtime';
-import {z} from "zod";
-import {createClient} from "@/lib/supabase/client";
-// import { getNextResponseFromSupervisor } from './supervisorAgent';
+import {RealtimeAgent} from '@openai/agents/realtime';
 
-// ----------------------
-// Tools
-// ----------------------
-
-// a) Save transcript snippet (called at the end of a session or periodically)
-const saveTranscriptTool = tool({
-    name: "save_transcript",
-    description: "Save a transcript segment to Supabase for later analysis.",
-    parameters: z.object({
-        sessionId: z.string().optional(),
-        userId: z.string(),
-        content: z.string(),
-    }),
-    execute: async ({ sessionId, userId, content }) => {
-        const supabase = createClient();
-
-        const { data, error } = await supabase
-            .from("session_transcripts")
-            .insert({
-                session_id: sessionId || crypto.randomUUID(),
-                user_id: userId,
-                content,
-            })
-            .select()
-            .single();
-
-        if (error) {
-            console.error("Transcript save error:", error);
-            return "I wasn’t able to save the transcript.";
-        }
-
-        return `Transcript saved.`;
-    },
-});
-
-
-export const addictionCoachAgent = new RealtimeAgent({
-    name: 'addictionCoachAgent',
-    voice: 'sage',
+export const kaiAgent = new RealtimeAgent({
+    name: 'kai',
+    voice: 'cedar',
     instructions: `
 You are a voice-based Addiction Recovery Coach named Kai. Your goal is to help users overcome addictions through a combination of active listening, structured goal-setting, daily accountability, and unwavering support. You represent a private, confidential coaching service.
 
@@ -165,13 +126,5 @@ Medium-paced. You slow down if the user is struggling emotionally, and sharpen y
     }]
   }
 ]
-`,
-    tools: [saveTranscriptTool],
+`
 });
-
-export const addictionCoachScenario = [addictionCoachAgent];
-
-// Name of the company/service this agent represents
-export const addictionCoachCompanyName = 'RecoveryPath';
-
-export default addictionCoachScenario;
