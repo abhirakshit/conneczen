@@ -15,20 +15,20 @@ export async function GET() {
                     session: {
                         type: 'realtime',
                         model: 'gpt-realtime',
-                        tools: [
-                            {
-                                type: 'mcp',
-                                server_label: 'deepwiki',
-                                server_url: 'https://mcp.deepwiki.com/sse',
-                                require_approval: 'always',
-                            },
-                            {
-                                type: 'mcp',
-                                server_label: 'dnd',
-                                server_url: 'https://dmcp-server.deno.dev/sse',
-                                require_approval: 'always',
-                            },
-                        ],
+                        // tools: [
+                        //     {
+                        //         type: 'mcp',
+                        //         server_label: 'deepwiki',
+                        //         server_url: 'https://mcp.deepwiki.com/sse',
+                        //         require_approval: 'always',
+                        //     },
+                        //     {
+                        //         type: 'mcp',
+                        //         server_label: 'dnd',
+                        //         server_url: 'https://dmcp-server.deno.dev/sse',
+                        //         require_approval: 'always',
+                        //     },
+                        // ],
                         tracing: {
                           workflow_name: 'Conneczen Flow',
                         },

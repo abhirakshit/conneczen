@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
+import React, {useEffect, useRef, useState} from "react";
+import {useSearchParams} from "next/navigation";
+import {v4 as uuidv4} from "uuid";
 
 import Image from "next/image";
 
@@ -11,34 +11,34 @@ import Events from "@/components/chat/Events";
 import BottomToolbar from "@//components/chat/BottomToolbar";
 
 // Types
-import { SessionStatus } from "@//app/types";
-import type { RealtimeAgent } from '@openai/agents/realtime';
+import {SessionStatus} from "@//app/types";
+import type {RealtimeAgent} from '@openai/agents/realtime';
 
 // Context providers & hooks
-import { useTranscript } from "@//app/contexts/TranscriptContext";
-import { useEvent } from "@//app/contexts/EventContext";
-import { useRealtimeSession } from "@//hooks/useRealtimeSession";
-import { createModerationGuardrail } from "@//lib/agentConfigs/guardrails";
+import {useTranscript} from "@//app/contexts/TranscriptContext";
+import {useEvent} from "@//app/contexts/EventContext";
+import {useRealtimeSession} from "@//hooks/useRealtimeSession";
+import {createModerationGuardrail} from "@//lib/agentConfigs/guardrails";
 
 // Agent configs
-import { allAgentSets, defaultAgentSetKey } from "@//lib/agentConfigs";
-import { customerServiceRetailScenario } from "@//lib/agentConfigs/customerServiceRetail";
-import { chatSupervisorScenario } from "@//lib/agentConfigs/chatSupervisor";
-import { customerServiceRetailCompanyName } from "@//lib/agentConfigs/customerServiceRetail";
-import { chatSupervisorCompanyName } from "@//lib/agentConfigs/chatSupervisor";
-import { simpleHandoffScenario } from "@//lib/agentConfigs/simpleHandoff";
+import {allAgentSets, defaultAgentSetKey} from "@//lib/agentConfigs";
+import {customerServiceRetailScenario} from "@//lib/agentConfigs/customerServiceRetail";
+import {chatSupervisorScenario} from "@//lib/agentConfigs/chatSupervisor";
+import {customerServiceRetailCompanyName} from "@//lib/agentConfigs/customerServiceRetail";
+import {chatSupervisorCompanyName} from "@//lib/agentConfigs/chatSupervisor";
+import {simpleHandoffScenario} from "@//lib/agentConfigs/simpleHandoff";
 import addictionCoachScenario from "@//lib/agentConfigs/addictionCoach";
 
 // Map used by connect logic for scenarios defined via the SDK.
 const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
-    simpleHandoff: simpleHandoffScenario,
-    customerServiceRetail: customerServiceRetailScenario,
-    chatSupervisor: chatSupervisorScenario,
+    // simpleHandoff: simpleHandoffScenario,
+    // customerServiceRetail: customerServiceRetailScenario,
+    // chatSupervisor: chatSupervisorScenario,
     "Addiction Coach": addictionCoachScenario,
 };
 
 import useAudioDownload from "@//hooks/useAudioDownload";
-import { useHandleSessionHistory } from "@//hooks/useHandleSessionHistory";
+import {useHandleSessionHistory} from "@//hooks/useHandleSessionHistory";
 
 function VoiceChatClient() {
     const searchParams = useSearchParams()!;
@@ -62,7 +62,7 @@ function VoiceChatClient() {
         addTranscriptMessage,
         addTranscriptBreadcrumb,
     } = useTranscript();
-    const { logClientEvent, logServerEvent } = useEvent();
+    const {logClientEvent, logServerEvent} = useEvent();
 
     const [selectedAgentName, setSelectedAgentName] = useState<string>("");
     const [selectedAgentConfigSet, setSelectedAgentConfigSet] = useState<
@@ -121,7 +121,7 @@ function VoiceChatClient() {
     );
 
     // Initialize the recording hook.
-    const { startRecording, stopRecording, downloadRecording } =
+    const {startRecording, stopRecording, downloadRecording} =
         useAudioDownload();
 
     const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
@@ -181,11 +181,11 @@ function VoiceChatClient() {
     }, [isPTTActive]);
 
     const fetchEphemeralKey = async (): Promise<string | null> => {
-        logClientEvent({ url: "/session" }, "fetch_session_token_request");
+        logClientEvent({url: "/session"}, "fetch_session_token_request");
         const tokenResponse = await fetch("/api/session");
-        console.log("TR PP", tokenResponse);
+        // console.log("TR PP", tokenResponse);
         const client_secret = await tokenResponse.json();
-        console.log("TR PP", client_secret);
+        // console.log("TR PP", client_secret);
         logServerEvent(client_secret, "fetch_session_token_response");
 
         if (!client_secret?.value) {
@@ -200,7 +200,7 @@ function VoiceChatClient() {
 
     const connectToRealtime = async () => {
         const agentSetKey = searchParams.get("agentConfig") || "default";
-        console.log("TR PP", agentSetKey, sdkScenarioMap[agentSetKey]);
+        // console.log("TR PP", agentSetKey, sdkScenarioMap[agentSetKey]);
         if (sdkScenarioMap[agentSetKey]) {
             if (sessionStatus !== "DISCONNECTED") return;
             setSessionStatus("CONNECTING");
@@ -222,15 +222,15 @@ function VoiceChatClient() {
                     : chatSupervisorCompanyName;
                 const guardrail = createModerationGuardrail(companyName);
 
-                console.log("OBJ", {
-                    getEphemeralKey: async () => EPHEMERAL_KEY,
-                    initialAgents: reorderedAgents,
-                    audioElement: sdkAudioElement,
-                    outputGuardrails: [guardrail],
-                    extraContext: {
-                        addTranscriptBreadcrumb,
-                    }
-                });
+                // console.log("OBJ", {
+                //     getEphemeralKey: async () => EPHEMERAL_KEY,
+                //     initialAgents: reorderedAgents,
+                //     audioElement: sdkAudioElement,
+                //     outputGuardrails: [guardrail],
+                //     extraContext: {
+                //         addTranscriptBreadcrumb,
+                //     }
+                // });
                 await connect({
                     getEphemeralKey: async () => EPHEMERAL_KEY,
                     initialAgents: reorderedAgents,
@@ -264,10 +264,10 @@ function VoiceChatClient() {
                 id,
                 type: 'message',
                 role: 'user',
-                content: [{ type: 'input_text', text }],
+                content: [{type: 'input_text', text}],
             },
         });
-        sendClientEvent({ type: 'response.create' }, '(simulated user text message)');
+        sendClientEvent({type: 'response.create'}, '(simulated user text message)');
     };
 
     const updateSession = (shouldTriggerResponse: boolean = false) => {
@@ -316,7 +316,7 @@ function VoiceChatClient() {
         interrupt();
 
         setIsPTTUserSpeaking(true);
-        sendClientEvent({ type: 'input_audio_buffer.clear' }, 'clear PTT buffer');
+        sendClientEvent({type: 'input_audio_buffer.clear'}, 'clear PTT buffer');
 
         // No placeholder; we'll rely on server transcript once ready.
     };
@@ -326,12 +326,12 @@ function VoiceChatClient() {
             return;
 
         setIsPTTUserSpeaking(false);
-        sendClientEvent({ type: 'input_audio_buffer.commit' }, 'commit PTT');
-        sendClientEvent({ type: 'response.create' }, 'trigger response PTT');
+        sendClientEvent({type: 'input_audio_buffer.commit'}, 'commit PTT');
+        sendClientEvent({type: 'response.create'}, 'trigger response PTT');
     };
 
     const onToggleConnection = () => {
-        console.log('toggle connection', sessionStatus);
+        // console.log('toggle connection', sessionStatus);
         if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
             disconnectFromRealtime();
             setSessionStatus("DISCONNECTED");
@@ -448,7 +448,7 @@ function VoiceChatClient() {
     const agentSetKey = searchParams.get("agentConfig") || "default";
 
     return (
-        <div className="text-base flex flex-col min-h-[calc(100vh-64px)] text-gray-800 relative">
+        <div className="text-base flex flex-col h-screen text-gray-800 relative">
             <div className="p-5 text-lg font-semibold flex justify-between items-center">
                 <div className="flex items-center">
                     <label className="flex items-center text-base gap-1 mr-2 font-medium">
@@ -466,7 +466,8 @@ function VoiceChatClient() {
                                 </option>
                             ))}
                         </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
+                        <div
+                            className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
                             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                 <path
                                     fillRule="evenodd"
@@ -494,7 +495,8 @@ function VoiceChatClient() {
                                         </option>
                                     ))}
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
+                                <div
+                                    className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
                                     <svg
                                         className="h-4 w-4"
                                         viewBox="0 0 20 20"
@@ -513,18 +515,18 @@ function VoiceChatClient() {
                 </div>
             </div>
 
-            <div className="flex flex-1 gap-2 overflow-hidden relative">
-                <Transcript
-                    userText={userText}
-                    setUserText={setUserText}
-                    onSendMessage={handleSendTextMessage}
-                    downloadRecording={downloadRecording}
-                    canSend={
-                        sessionStatus === "CONNECTED"
-                    }
-                />
+            <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
+                    <Transcript
+                        userText={userText}
+                        setUserText={setUserText}
+                        onSendMessage={handleSendTextMessage}
+                        downloadRecording={downloadRecording}
+                        canSend={
+                            sessionStatus === "CONNECTED"
+                        }
+                    />
 
-                <Events isExpanded={isEventsPaneExpanded} />
+                    <Events isExpanded={isEventsPaneExpanded}/>
             </div>
 
             <BottomToolbar

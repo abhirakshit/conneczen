@@ -13,9 +13,11 @@ import {
     DropdownMenuTrigger
 } from "@//components/ui/dropdown-menu";
 import {Avatar, AvatarFallback, AvatarImage} from "@//components/ui/avatar";
+import {useRouter} from "next/navigation";
 
 export function AuthButtonClient() {
     const {user, signOut} = useAuth()
+    const router = useRouter();
     // console.log("Auth BTN user", user);
     if (!user) {
         return (
@@ -29,6 +31,10 @@ export function AuthButtonClient() {
             </div>
         );
     }
+
+    const goTo = (path: string) => {
+        router.push(path);
+    };
 
     const avatar = user.user_metadata.avatar_url
     return (
@@ -45,47 +51,47 @@ export function AuthButtonClient() {
                 <DropdownMenuContent className="w-56" align="start">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                            Profile
+                        <DropdownMenuItem onClick={() => goTo("/dashboard")}>
+                            Dashboard
                             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            Billing
-                            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            Settings
-                            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            Keyboard shortcuts
-                            <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-                        </DropdownMenuItem>
+                        {/*<DropdownMenuItem>*/}
+                        {/*    Billing*/}
+                        {/*    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>*/}
+                        {/*</DropdownMenuItem>*/}
+                        {/*<DropdownMenuItem>*/}
+                        {/*    Settings*/}
+                        {/*    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>*/}
+                        {/*</DropdownMenuItem>*/}
+                        {/*<DropdownMenuItem>*/}
+                        {/*    Keyboard shortcuts*/}
+                        {/*    <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                        {/*</DropdownMenuItem>*/}
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem>Team</DropdownMenuItem>
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem>Email</DropdownMenuItem>
-                                    <DropdownMenuItem>Message</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>More...</DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
-                        <DropdownMenuItem>
-                            New Team
-                            <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>GitHub</DropdownMenuItem>
-                    <DropdownMenuItem>Support</DropdownMenuItem>
-                    <DropdownMenuItem disabled>API</DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    {/*<DropdownMenuGroup>*/}
+                    {/*    <DropdownMenuItem>Team</DropdownMenuItem>*/}
+                    {/*    <DropdownMenuSub>*/}
+                    {/*        <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>*/}
+                    {/*        <DropdownMenuPortal>*/}
+                    {/*            <DropdownMenuSubContent>*/}
+                    {/*                <DropdownMenuItem>Email</DropdownMenuItem>*/}
+                    {/*                <DropdownMenuItem>Message</DropdownMenuItem>*/}
+                    {/*                <DropdownMenuSeparator />*/}
+                    {/*                <DropdownMenuItem>More...</DropdownMenuItem>*/}
+                    {/*            </DropdownMenuSubContent>*/}
+                    {/*        </DropdownMenuPortal>*/}
+                    {/*    </DropdownMenuSub>*/}
+                    {/*    <DropdownMenuItem>*/}
+                    {/*        New Team*/}
+                    {/*        <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>*/}
+                    {/*    </DropdownMenuItem>*/}
+                    {/*</DropdownMenuGroup>*/}
+                    {/*<DropdownMenuSeparator />*/}
+                    {/*<DropdownMenuItem>GitHub</DropdownMenuItem>*/}
+                    {/*<DropdownMenuItem>Support</DropdownMenuItem>*/}
+                    {/*<DropdownMenuItem disabled>API</DropdownMenuItem>*/}
+                    {/*<DropdownMenuSeparator />*/}
                     <DropdownMenuItem onClick={signOut}>
                         Log out
                         <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>

@@ -113,6 +113,7 @@ function Transcript({
                 guardrailResult,
               } = item;
 
+              console.log("IT", item)
             if (isHidden) {
               return null;
             }

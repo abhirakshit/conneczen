@@ -1,15 +1,13 @@
 "use client";
 
 import {Suspense, useState} from "react";
-import { useAuth } from "@/hooks/authContext";
 import {TranscriptProvider} from "@/app/contexts/TranscriptContext";
 import {EventProvider} from "@/app/contexts/EventContext";
 import VoiceChatClient from "@/components/chat/VoiceChatClient";
 import {useUserData} from "@/lib/store/useUserData";
+import VoiceChatClient1 from "@/components/chat/VoiceChat";
 
 export default function DashboardHome() {
-    // const { user } = useAuth();
-    // const [draft, setDraft] = useState<string>("");
     const {
         settings,
         schedules,
@@ -25,6 +23,7 @@ export default function DashboardHome() {
                 <TranscriptProvider>
                     <EventProvider>
                         <VoiceChatClient />
+                        {/*<VoiceChatClient1 />*/}
                     </EventProvider>
                 </TranscriptProvider>
             </Suspense>
