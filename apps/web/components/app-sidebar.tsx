@@ -36,7 +36,7 @@ const data = {
   },
   teams: [
     {
-      name: "Conneczen",
+      name: "Astro Buddy",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
@@ -53,8 +53,8 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
+      title: "Dashboard",
+      url: "/dashboard",
       icon: SquareTerminal,
       isActive: true,
       items: [
@@ -72,25 +72,25 @@ const data = {
         },
       ],
     },
-    // {
-    //   title: "Models",
-    //   url: "#",
-    //   icon: Bot,
-    //   items: [
-    //     {
-    //       title: "Genesis",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Explorer",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Quantum",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
+    {
+      title: "Charts",
+      url: "#",
+      icon: Bot,
+      items: [
+        {
+          title: "All",
+          url: "/charts/all",
+        },
+        {
+          title: "Research",
+          url: "/charts/research",
+        },
+        {
+          title: "Quantum",
+          url: "#",
+        },
+      ],
+    },
     // {
     //   title: "Documentation",
     //   url: "#",

@@ -41,13 +41,13 @@ export async function updateSession(request: NextRequest) {
     const {data} = await supabase.auth.getClaims();
     // console.log('data', data);
     const user = data?.claims;
-    console.log("user", user?.email);
+    // console.log("user", user?.email);
 
     // console.log("USER", user, request.nextUrl.pathname);
     // const role = user ? await getUserRole() : null;
     const path = request.nextUrl.pathname;
 
-    console.log("RESP MIDDLE", path);
+    // console.log("RESP MIDDLE", path);
 
     const isPublicRoute =
         path === "/" ||

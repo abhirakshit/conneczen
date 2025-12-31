@@ -64,7 +64,7 @@ export const useUserData = create<UserDataState>((set, get) => ({
             onboardingComplete,
             loading: false,
         });
-        console.log("Data Loaded", onboardingComplete);
+        // console.log("Data Loaded", onboardingComplete);
     },
 
     updateSettings: async (updates) => {
