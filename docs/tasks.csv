@@ -1,11 +1,15 @@
 Task Name,Section,Description,Tags,Estimated Time
-D1-1 Write onboarding success criteria,Ready,"Define what must exist in the system for onboarding to be considered complete. Output: 1-page doc defining success state.",onboarding;architecture;day1,30m
-D1-2 Define IOA responsibility boundaries,Ready,"Write a clear list of what the Onboarding Agent can do and must not do (no therapy, no diagnosis, no promises). Output: bullet list.",onboarding;agent-design;day1,30m
-D1-3 Identify minimum identity data required,Ready,"List foundational identity data vs nice-to-have. Focus on psychological stability and clarity. Output: field list with rationale.",onboarding;data-model;day1,30m
-D1-4 Map onboarding to coach handoff contract,Ready,"Define exact JSON schema passed from IOA to coach. No prose. Output: JSON schema draft.",onboarding;handoff;day1,30m
-D1-5 Decide default onboarding failure paths,Ready,"Define what happens if user is vague, refuses to answer, or contradicts themselves. Output: decision table.",onboarding;edge-cases;day1,30m
-D2-1 Design identity_profiles table v1,Ready,"Design SQL schema for identity_profiles. One row per user. Output: SQL draft.",database;identity;day2,30m
-D2-2 Design user_context_snapshots table,Ready,"Design immutable snapshot table capturing onboarding state. Output: SQL + explanation.",database;context;day2,30m
-D2-3 Define identity-user-coach relationships,Ready,"Decide 1:1 vs 1:N relationships. Output: simple ER diagram or description.",database;architecture;day2,30m
-D2-4 Add onboarding status tracking,Ready,"Design onboarding status enum or table with explicit states. Output: SQL migration plan.",database;onboarding;day2,30m
-D2-5 Define RLS rules for identity data,Ready,"Draft RLS rules for reading/writing identity data (user vs agent). Output: policy draft.",database;security;day2,30m
+Define onboarding routing rules,Backlog,"Write deterministic rules mapping onboarding_state + identity_profiles to routes (/onboarding vs /chat). Output: markdown reference.",onboarding;architecture,30m
+Implement getOnboardingContext(userId),Backlog,"Server-side function to fetch onboarding_state + identity draft and return structured context for agents.",backend;onboarding,30m
+Create onboarding resume prompt rules,Backlog,"Define how IOA resumes onboarding with partial identity data (acknowledge, confirm, refine). Output: prompt section.",agent-design;onboarding,30m
+Add onboarding route guard (middleware/layout),Backlog,"Prevent access to /chat if onboarding incomplete and redirect to /onboarding.",nextjs;auth;onboarding,30m
+Create /onboarding page scaffold,Backlog,"Minimal page that launches voice chat with IOA as root agent. No forms.",frontend;onboarding,30m
+Inject onboarding context into IOA session,Backlog,"Pass onboarding context (identity draft + state) into realtime session initialization.",voice;agent-context,30m
+Handle identity confirmation transition,Backlog,"When identity confirmed: update status → confirmed, onboarding_state → completed.",backend;identity,30m
+Implement coach assignment stub,Backlog,"Post-onboarding async logic to assign coach_type based on confirmed identity domain.",backend;coach,30m
+Lock onboarding after completion,Backlog,"Prevent identity edits once onboarding_state = completed.",backend;guards,30m
+Route completed users to /chat,Backlog,"Ensure logged-in users with completed onboarding always land on /chat.",routing;onboarding,30m
+Wire /chat to assigned coach agent,Backlog,"Initialize voice/chat session using assigned coach type instead of IOA.",voice;coach,30m
+Add stalled onboarding handling,Backlog,"Detect stalled onboarding and resume IOA with reminder framing.",onboarding;agent-design,30m
+Create onboarding state enum + table,Backlog,"Define onboarding_state enum and persistence model.",database;onboarding,30m
+Document onboarding flow v1,Backlog,"High-level flow doc linking identity, IOA, routing, and coach handoff.",docs;onboarding,30m

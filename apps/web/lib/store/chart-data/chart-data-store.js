@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { CONSTANTS } from "@/lib/constants";
+import { AstroConstants } from "@/lib/constants/astroConstants";
 
 // Zustand store
 export const useChartDataStore = create((set) => ({
@@ -9,7 +9,7 @@ export const useChartDataStore = create((set) => ({
     transitD1ChartData: null, // Transit D1
     chartProfileData: null, //
     divisionalChartData: null,
-    vedicAstroType: CONSTANTS.VEDIC_ASTRO_TYPES.PARASHARA,
+    vedicAstroType: AstroConstants.VEDIC_ASTRO_TYPES.PARASHARA,
     // trineSelection: 1,
 
     // Actions

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { createJSClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { COACH_TYPES } from "@/lib/constants/coachTypes";
+import { COACH_TYPES } from "@/lib/types/coachTypes";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";

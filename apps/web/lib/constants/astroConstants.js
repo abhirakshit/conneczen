@@ -1,4 +1,4 @@
-export const CONSTANTS = {
+export const AstroConstants = {
     // PLANET: "planet",
     // SIGN: "sign",
     // HOUSE: "house",

@@ -1,7 +1,7 @@
 # System Doctrine
 Version: 0.1  
 Status: Active  
-Last Updated: 2025-12-30
+Last Updated: 2025-12-31
 
 ---
 
@@ -215,3 +215,6 @@ This document is the system’s source of truth.
 These questions are tracked but not prematurely answered.
 
 ---
+
+## Referenced Specifications
+- Onboarding Success Criteria → docs/onboarding-success-criteria.md

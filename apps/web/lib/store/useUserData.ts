@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { createJSClient } from "@/lib/supabase/client";
-import {CoachTypeId} from "@/lib/constants/coachTypes";
+import {CoachTypeId} from "@/lib/types/coachTypes";
 
 interface Schedule {
     id: string;

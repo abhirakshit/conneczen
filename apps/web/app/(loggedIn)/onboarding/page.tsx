@@ -20,7 +20,7 @@ import {useAuth} from "@/hooks/authContext";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { COACH_TYPES } from "@/lib/constants/coachTypes";
+import { COACH_TYPES } from "@/lib/types/coachTypes";
 import {NavbarHome} from "@/components/navbar-home";
 
 export default function OnboardingPage() {
