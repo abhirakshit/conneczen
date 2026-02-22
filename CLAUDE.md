@@ -9,6 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 yarn install          # Install all dependencies
 ```
 
+**Package Manager**: yarn only. Do not use npm or pnpm. Only `yarn.lock` should exist.
+
 ### Web App (apps/web)
 ```bash
 cd apps/web
@@ -178,6 +180,12 @@ Clean layout with:
 - Morning/evening schedule toggles with time pickers
 - Timezone selector
 - Account info (name, email, phone)
+
+### Landing Page (`app/page.tsx`)
+Critical content sections that must not be removed when making visual changes:
+1. **"Built for people like you"** - busy professionals, verbal processors, seekers of clarity
+2. **"Why other apps don't work"** - reminders ignored, streaks shame, writing is work, too many features
+3. **"Grounded in behavioral science"** - implementation intentions, bookend reflection, voice processing
 
 ---
 
