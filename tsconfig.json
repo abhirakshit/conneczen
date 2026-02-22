@@ -2,7 +2,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@conneczen/agents": ["packages/agents/index.ts"],
       "@conneczen/agents/*": ["packages/agents/*"],
+      "@conneczen/realtime": ["packages/realtime/index.ts"],
+      "@conneczen/realtime/*": ["packages/realtime/*"],
+      "@conneczen/types": ["packages/types/index.ts"],
+      "@conneczen/types/*": ["packages/types/*"],
+      "@conneczen/prompts": ["packages/prompts/index.ts"],
+      "@conneczen/prompts/*": ["packages/prompts/*"],
       "@conneczen/utils/*": ["packages/utils/*"]
     }
   }

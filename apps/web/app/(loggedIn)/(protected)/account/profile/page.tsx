@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createSSRClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/authContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
-    const supabase = createClient();
+    const supabase = createSSRClient();
     const { user } = useAuth();
     const [profile, setProfile] = useState({ name: "", email: "" });
     const [saving, setSaving] = useState(false);

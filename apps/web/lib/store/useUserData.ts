@@ -1,6 +1,6 @@
 "use client";
 import { create } from "zustand";
-import { createJSClient } from "@/lib/supabase/client";
+import { createSSRClient } from "@/lib/supabase/client";
 import {CoachTypeId} from "@/lib/types/coachTypes";
 
 interface Schedule {
@@ -17,6 +17,7 @@ interface UserSettings {
     coach_type: CoachTypeId;
     language: string;
     timezone: string;
+    onboarding_completed: boolean;
 }
 
 interface UserDataState {
@@ -39,10 +40,10 @@ export const useUserData = create<UserDataState>((set, get) => ({
     loading: false,
 
     fetchUserData: async (userId) => {
-        const supabase = createJSClient();
+        const supabase = createSSRClient();
         set({ loading: true });
 
-        const [{ data: settings }, { data: schedules }, { data: identity }] =
+        const [{ data: settings }, { data: schedules }] =
             await Promise.all([
                 supabase
                     .from("user_settings")
@@ -53,21 +54,12 @@ export const useUserData = create<UserDataState>((set, get) => ({
                 supabase
                     .from("user_schedules")
                     .select("*")
-                    .eq("user_id", userId),
-
-                supabase
-                    .from("identity_profiles")
-                    .select("status")
                     .eq("user_id", userId)
-                    .maybeSingle(),
+                    .eq("active", true),
             ]);
 
-        const hasConfirmedIdentity = identity?.status === "confirmed";
-        const hasSettings = !!settings;
-        const hasSchedules = !!(schedules && schedules.length > 0);
-
-        const onboardingComplete =
-            hasConfirmedIdentity && hasSettings && hasSchedules;
+        // Use onboarding_completed flag from user_settings
+        const onboardingComplete = settings?.onboarding_completed === true;
 
         set({
             settings: settings || null,
@@ -79,7 +71,7 @@ export const useUserData = create<UserDataState>((set, get) => ({
     },
 
     updateSettings: async (updates) => {
-        const supabase = createJSClient();
+        const supabase = createSSRClient();
         const settings = get().settings;
         if (!settings) return;
 
@@ -89,7 +81,7 @@ export const useUserData = create<UserDataState>((set, get) => ({
     },
 
     refreshSchedules: async (userId) => {
-        const supabase = createJSClient();
+        const supabase = createSSRClient();
         const { data: schedules } = await supabase
             .from("user_schedules")
             .select("*")

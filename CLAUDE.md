@@ -11,45 +11,100 @@ yarn install          # Install all dependencies
 
 ### Web App (apps/web)
 ```bash
-yarn --cwd apps/web dev       # Start dev server with Turbopack
-yarn --cwd apps/web build     # Production build with Turbopack
-yarn --cwd apps/web lint      # Run ESLint
-yarn --cwd apps/web start     # Start production server
+cd apps/web
+yarn dev       # Start dev server with Turbopack
+yarn build     # Production build with Turbopack
+yarn lint      # Run ESLint
+yarn start     # Start production server
 ```
 
 ### Voice Worker (apps/voice-worker)
 ```bash
-yarn --cwd apps/voice-worker dev      # Start with ts-node-dev (hot reload)
-yarn --cwd apps/voice-worker build    # Compile TypeScript
-yarn --cwd apps/voice-worker start    # Run compiled server
+cd apps/voice-worker
+yarn dev      # Start with ts-node-dev (hot reload)
+yarn build    # Compile TypeScript
+yarn start    # Run compiled server
 ```
 
 ## Architecture Overview
 
 ### Monorepo Structure
-- **apps/web**: Next.js 15.5 web application (React 19, Turbopack)
-- **apps/voice-worker**: Express.js server for real-time voice coaching via Twilio SIP + OpenAI Realtime API
-- **packages/agents**: AI agent configurations
-- **packages/utils**: Shared utilities
+```
+conneczen/
+├── apps/
+│   ├── web/              # Next.js 16 web application
+│   └── voice-worker/     # Express.js Twilio voice server
+├── packages/
+│   ├── agents/           # AI agent configurations (IOA, Analyst)
+│   ├── realtime/         # OpenAI Realtime API client
+│   ├── types/            # Shared TypeScript types
+│   ├── prompts/          # Agent prompt templates
+│   └── utils/            # Shared utilities
+└── docs/                 # Specifications and documentation
+```
 
-Path aliases: `@conneczen/agents/*` and `@conneczen/utils/*` map to respective packages.
+**Path Aliases** (configured in root tsconfig.json):
+- `@conneczen/agents` → `packages/agents/index.ts`
+- `@conneczen/realtime` → `packages/realtime/index.ts`
+- `@conneczen/types` → `packages/types/index.ts`
+- `@conneczen/prompts` → `packages/prompts/index.ts`
 
 ### Web App Architecture
 
-**Stack**: Next.js 15 App Router, React 19, Supabase (auth + database), Zustand (state), shadcn/ui + Radix (components), Tailwind CSS 4, Zod (validation)
+**Stack**: Next.js 16, React 19, Supabase (auth + database), Zustand (state), shadcn/ui + Radix (components), Tailwind CSS 4, Zod (validation)
+
+**Theme**: Amber/teal color scheme
+- Background: `bg-amber-50`
+- Text: `text-amber-900`, `text-amber-700`, `text-amber-600`
+- Borders: `border-amber-200`
+- Primary actions: `bg-teal-600`, `hover:bg-teal-700`
+- Badges: `bg-teal-100 text-teal-800` (completed), `bg-amber-100 text-amber-800` (pending)
 
 **Route Groups**:
 - `app/auth/` - Login, signup, callback, logout
-- `app/(loggedIn)/` - Authenticated user routes
-- `app/(loggedIn)/(protected)/` - Routes requiring complete onboarding (dashboard, charts, account, settings)
+- `app/(loggedIn)/` - Authenticated routes (checks onboarding status)
+- `app/(loggedIn)/onboarding/` - Single-page onboarding form
+- `app/(loggedIn)/(protected)/` - Dashboard routes with DashboardShell layout
 
 **Key Directories**:
-- `lib/agentConfigs/` - AI agent prompt configurations (Kai addiction coach, chat supervisor, etc.)
-- `lib/supabase/` - Client/server Supabase instances and middleware
-- `lib/store/` - Zustand stores (useUserData, useUserProgress)
-- `hooks/` - Custom hooks (authContext, useRealtimeSession, useOnboardingCheck)
+- `components/dashboard/` - Dashboard UI components (DashboardShell, SessionCard, SettingsForm, etc.)
+- `components/call/` - Voice call components (IOACallInterface)
+- `lib/actions/` - Server actions (onboarding, settings, sessions, identity)
+- `lib/queries/` - Database query functions
+- `lib/store/` - Zustand stores (useUserData)
+- `lib/supabase/` - Supabase clients and middleware
+- `hooks/` - Custom hooks (authContext, useIOACall, useRealtimeCall)
 
-**Authentication**: Supabase Auth with SSR session refresh in middleware. Role-based access via `getUserRole()`.
+### Supabase Client Usage
+
+**IMPORTANT**: Always use the correct client:
+
+- **Server Components/Actions**: Use `createSSRClient()` from `@/lib/supabase/server`
+- **Client Components**: Use `createSSRClient()` from `@/lib/supabase/client` (uses `createBrowserClient`)
+- **DO NOT USE**: `createJSClient()` - it doesn't include auth cookies and will fail RLS policies
+
+### Database Tables (Supabase)
+
+- `users` - User profile (name, phone, email)
+- `user_settings` - Preferences, timezone, `onboarding_completed` flag
+- `user_schedules` - Call schedules with `schedule_type` (morning/evening/custom)
+- `sessions` - Voice session records with transcripts, summaries, mental state
+- `identity_profiles` - User identity status (for IOA flow)
+
+### Onboarding Flow
+
+**Simplified single-page onboarding** (`/onboarding`):
+1. Name and phone number
+2. Timezone (auto-detected)
+3. Morning check-in time (toggle + time picker)
+4. Evening reflection time (toggle + time picker)
+5. Privacy acknowledgment + disclaimer checkboxes
+6. Submit → creates user, settings, schedules → redirects to dashboard
+
+**Onboarding State Check**:
+- Store (`useUserData`) checks `user_settings.onboarding_completed === true`
+- If incomplete, `(loggedIn)/layout.tsx` redirects to `/onboarding`
+- After completing, call `setOnboardingComplete(true)` before redirect
 
 ### Voice Worker Architecture
 
@@ -57,145 +112,80 @@ Handles real-time voice coaching calls:
 ```
 Twilio Call → TwiML <Stream> → WebSocket /media-stream
     → TwilioRealtimeTransportLayer → OpenAI Realtime API
-    → RealtimeAgent with instructions from Supabase call_context table
+    → RealtimeAgent with instructions from Supabase
 ```
-
-### Database Tables (Supabase)
-- `user_settings` - User preferences, timezone, coach type
-- `user_schedules` - Call schedules
-- `identity_profiles` - User identity status
-- `session_transcripts` - Voice session transcripts
-- `call_context` - Call instructions for agents
-- `user_roles` - Role definitions
-
-## System Philosophy (from docs/system-doctrine.md)
-
-This system supports **sustained human agency** for individuals navigating behavioral challenges. Key principles:
-
-1. **Identity precedes behavior** - No behavior change without identity coherence
-2. **Readiness gates action** - No plans/goals before readiness is established
-3. **Shame disables agency** - Any shame-inducing behavior is a system failure
-4. **Single-domain focus** - Coach only one behavioral domain at a time
-5. **Lossy handoffs** - Agents intentionally don't share full context to preserve autonomy
-
-**Agent Roles**:
-- **IOA (Identity & Orientation Agent)**: Establishes identity, no goals/plans/tracking
-- **Foundational Coach**: Reduces shame, stabilizes motivation
-- **Domain Coach**: Tactical planning for a single domain (requires readiness)
-
-**Prohibited Behaviors**: Framing relapse as failure, using streaks before readiness, comparing users to benchmarks, shame-based feedback.
-
-## AI Agent Configuration Pattern
-
-Agents in `lib/agentConfigs/` follow this structure:
-- `index.ts` - Agent config with name, voice, instructions, tools, conversation states
-- Tools use Zod schemas for inputs
-- Conversation states define flow (intro → understand → plan → checkin)
-
-## Environment Setup
-
-Requires `.env.local` files in apps with Supabase and OpenAI credentials.
-
-
-## Core Design Principles (Non-Negotiable)
-
-### 1. Voice-First
-- Onboarding happens via **conversation**, not forms
-- AI agents interpret, summarize, and structure user input
-- UI only confirms or visualizes agent output
-
-### 2. Draft → Confirm Lifecycle
-- All meaningful user data starts as `draft`
-- Nothing is assumed permanent until **explicitly confirmed**
-- This applies to:
-    - identity profiles
-    - settings
-    - schedules
-    - goals
-    - visions
-
-### 3. Separation of Responsibility
-- **Onboarding Agent (IOA)** gathers identity
-- **Coaches** act only after identity is confirmed
-- No agent does therapy, diagnosis, or medical advice
-
-### 4. Minimal State, Explicit Transitions
-- Avoid hidden magic
-- State transitions must be:
-    - explicit
-    - inspectable
-    - reversible where possible
 
 ---
 
 ## Key Agents
 
-### IOA — Identity Onboarding Agent
-**Purpose**
-- Establish psychological grounding
-- Extract identity signals
-- Prepare user for coaching
+### IOA - Identity Onboarding Agent
+**Purpose**: Establish psychological grounding via voice conversation
 
-**Can**
+**Can**:
 - Ask reflective questions
 - Create draft identity profiles
 - Handle vague or conflicted answers
-- Stall safely if user is not ready
 
-**Cannot**
-- Diagnose
-- Treat addiction or mental illness
+**Cannot**:
+- Diagnose or treat
 - Promise outcomes
-- Begin coaching proper
+- Begin coaching
 
 ### Coaches
 - Operate only after IOA completion
-- Receive **only structured handoff data**
-- Never re-interpret identity unless explicitly asked
+- Receive only structured handoff data
+- Single-domain focus (health, addiction, career, etc.)
 
 ---
 
-## Identity Model
+## System Philosophy
 
-Identity is **domain-scoped**, not global.
+This system supports **sustained human agency** for individuals navigating behavioral challenges.
 
-Examples:
-- health
-- addiction
-- career
-- relationships
-- mental_health
+### Core Principles
+1. **Identity precedes behavior** - No behavior change without identity coherence
+2. **Readiness gates action** - No plans/goals before readiness is established
+3. **Shame disables agency** - Any shame-inducing behavior is a system failure
+4. **Single-domain focus** - Coach only one behavioral domain at a time
+5. **Draft → Confirm lifecycle** - All data starts as draft, confirmed explicitly
 
-Each identity profile:
-- belongs to one domain
-- has a lifecycle: `draft → confirmed → archived`
-- may evolve, but only via explicit user consent
-
----
-
-## Onboarding State Machine
-
-States:
-- `started`
-- `collecting`
-- `stalled`
-- `completed`
-
-Rules:
-- No skipping states
-- Stalled is a valid outcome
-- Completion requires confirmed identity + minimum settings
+### Prohibited Behaviors
+- Framing relapse as failure
+- Using streaks before readiness
+- Comparing users to benchmarks
+- Shame-based feedback
+- Therapy/diagnosis framing
 
 ---
 
-## Data Ownership Rules
+## Component Patterns
 
-- Users own their data
-- Agents may propose, not impose
-- System must tolerate:
-    - contradiction
-    - uncertainty
-    - slow progress
+### DashboardShell
+Clean layout with:
+- Mobile: Hamburger menu → sheet sidebar
+- Desktop: Fixed 256px sidebar
+- User dropdown at bottom of sidebar
+- Nav: Dashboard, Sessions, Settings
+
+### Dashboard Cards
+- `NextCallCard` - Shows next scheduled call with relative time
+- `StartSessionCard` - CTA to start immediate session
+- `RecentSessionsCard` - List of recent sessions with summaries
+- `SessionDetail` - Full session view with AI summary, mental state, transcript
+
+### Settings Form
+- Morning/evening schedule toggles with time pickers
+- Timezone selector
+- Account info (name, email, phone)
+
+---
+
+## Git Rules
+
+- **Never change git remote URLs** without explicit user permission
+- Ask before modifying any git configuration
+- If a push fails due to credentials, inform the user - do not attempt workarounds
 
 ---
 
@@ -207,60 +197,7 @@ Claude should actively resist:
 - Multi-agent orchestration before IOA is stable
 - Hidden heuristics that override user intent
 - Silent auto-confirmation of drafts
-
----
-
-## Acceptable Technical Stack Decisions
-
-- Next.js App Router
-- Supabase (Postgres + Auth)
-- Zustand for client state
-- Server-side enforcement of onboarding
-- WebRTC / Realtime voice for web
-- Twilio for phone (later)
-
-Do **not** introduce:
-- CMS platforms
-- workflow engines
-- heavy state machines
-  unless explicitly requested
-
----
-
-## How to Extend the System Safely
-
-When adding a feature, ask:
-1. Does this respect draft → confirm?
-2. Does this increase or reduce cognitive load?
-3. Does an agent or a human own this decision?
-4. Is this reversible?
-
-If unclear, **pause and ask**.
-
----
-
-## Tone and Behavior for AI Agents
-
-Agents must be:
-- calm
-- grounded
-- non-judgmental
-- precise
-- conservative in claims
-
-Avoid:
-- hype language
-- therapy framing
-- absolute statements
-- moralizing
-
----
-
-## Git Rules
-
-- **Never change git remote URLs** without explicit user permission
-- Ask before modifying any git configuration (remotes, hooks, config)
-- If a push fails due to credentials, inform the user - do not attempt workarounds
+- Heavy CMS/workflow engines
 
 ---
 

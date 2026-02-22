@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { createClient } from "@/lib/supabase/client";
+import { createSSRClient } from "@/lib/supabase/client";
 
 type OnboardingStatus = "pending" | "incomplete" | "complete";
 
@@ -14,7 +14,7 @@ export const useUserProgress = create<UserProgressState>((set) => ({
     onboardingStatus: "pending",
 
     refreshStatus: async (userId: string) => {
-        const supabase = createClient();
+        const supabase = createSSRClient();
 
         const { data: settings } = await supabase
             .from("user_settings")

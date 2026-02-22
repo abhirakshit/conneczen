@@ -29,7 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import {createClient} from "@/lib/supabase/client";
+import {createSSRClient} from "@/lib/supabase/client";
 import {router} from "next/client";
 import {useAuth} from "@//hooks/authContext";
 import {useRouter} from "next/navigation";
