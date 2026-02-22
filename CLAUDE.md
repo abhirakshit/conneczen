@@ -256,6 +256,14 @@ Avoid:
 
 ---
 
+## Git Rules
+
+- **Never change git remote URLs** without explicit user permission
+- Ask before modifying any git configuration (remotes, hooks, config)
+- If a push fails due to credentials, inform the user - do not attempt workarounds
+
+---
+
 ## Final Rule
 
 If you (Claude) are unsure:
