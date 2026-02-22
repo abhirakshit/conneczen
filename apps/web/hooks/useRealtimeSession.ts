@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   RealtimeSession,
   RealtimeAgent,
@@ -13,6 +13,7 @@ import { SessionStatus } from '@/app/types';
 export interface RealtimeSessionCallbacks {
   onConnectionChange?: (status: SessionStatus) => void;
   onAgentHandoff?: (agentName: string) => void;
+  onToolCall?: (toolName: string, toolArgs: Record<string, unknown>, result: unknown) => void;
 }
 
 export interface ConnectOptions {
@@ -41,27 +42,27 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
 
   const { logServerEvent } = useEvent();
 
-  const historyHandlers = useHandleSessionHistory().current;
+  const historyHandlersRef = useHandleSessionHistory();
 
   function handleTransportEvent(event: any) {
     // Handle additional server events that aren't managed by the session
     switch (event.type) {
       case "conversation.item.input_audio_transcription.completed": {
-        historyHandlers.handleTranscriptionCompleted(event);
+        historyHandlersRef.current.handleTranscriptionCompleted(event);
         break;
       }
       case "response.audio_transcript.done": {
-        historyHandlers.handleTranscriptionCompleted(event);
+        historyHandlersRef.current.handleTranscriptionCompleted(event);
         break;
       }
       case "response.audio_transcript.delta": {
-        historyHandlers.handleTranscriptionDelta(event);
+        historyHandlersRef.current.handleTranscriptionDelta(event);
         break;
       }
       default: {
         logServerEvent(event);
         break;
-      } 
+      }
     }
   }
 
@@ -87,28 +88,39 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
     callbacks.onAgentHandoff?.(agentName);
   };
 
-  useEffect(() => {
-    if (sessionRef.current) {
-      // Log server errors
-      sessionRef.current.on("error", (...args: any[]) => {
-        logServerEvent({
-          type: "error",
-          message: args[0],
-        });
-      });
+  const handleToolEnd = (item: any, agent: any, functionCall: any, result: any) => {
+    // Call the history handler first
+    historyHandlersRef.current.handleAgentToolEnd(item, agent, functionCall, result);
 
-      // history events
-      sessionRef.current.on("agent_handoff", handleAgentHandoff);
-      sessionRef.current.on("agent_tool_start", historyHandlers.handleAgentToolStart);
-      sessionRef.current.on("agent_tool_end", historyHandlers.handleAgentToolEnd);
-      sessionRef.current.on("history_updated", historyHandlers.handleHistoryUpdated);
-      sessionRef.current.on("history_added", historyHandlers.handleHistoryAdded);
-      sessionRef.current.on("guardrail_tripped", historyHandlers.handleGuardrailTripped);
-
-      // additional transport events
-      sessionRef.current.on("transport_event", handleTransportEvent);
+    // Then call our callback if provided
+    if (callbacks.onToolCall) {
+      const toolName = item.tool?.name || item.name;
+      const toolArgs = item.tool?.parsedArguments || item.arguments;
+      const toolResult = item.output || item.result;
+      callbacks.onToolCall(toolName, toolArgs, toolResult);
     }
-  }, [sessionRef.current]);
+  };
+
+  const setupSessionListeners = (session: RealtimeSession) => {
+    // Log server errors
+    session.on("error", (...args: any[]) => {
+      logServerEvent({
+        type: "error",
+        message: args[0],
+      });
+    });
+
+    // history events - use wrapper functions to access ref.current at call time
+    session.on("agent_handoff", handleAgentHandoff);
+    session.on("agent_tool_start", (...args: any[]) => historyHandlersRef.current.handleAgentToolStart(...args));
+    session.on("agent_tool_end", handleToolEnd);
+    session.on("history_updated", (...args: any[]) => historyHandlersRef.current.handleHistoryUpdated(...args));
+    session.on("history_added", (...args: any[]) => historyHandlersRef.current.handleHistoryAdded(...args));
+    session.on("guardrail_tripped", (...args: any[]) => historyHandlersRef.current.handleGuardrailTripped(...args));
+
+    // additional transport events
+    session.on("transport_event", handleTransportEvent);
+  };
 
   const connect = useCallback(
     async ({
@@ -144,6 +156,9 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
         outputGuardrails: outputGuardrails ?? [],
         context: extraContext ?? {},
       });
+
+      // Set up event listeners immediately after creating the session
+      setupSessionListeners(sessionRef.current);
 
       await sessionRef.current.connect({ apiKey: ek });
       updateStatus('CONNECTED');

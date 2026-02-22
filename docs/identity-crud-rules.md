@@ -1,7 +1,6 @@
 # Identity CRUD Rules
-Version: 0.1  
-Status: Active  
-Last Updated: 2025-12-31
+
+
 ---
 
 ## Purpose

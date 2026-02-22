@@ -49,10 +49,23 @@ export async function updateSession(request: NextRequest) {
 
     // console.log("RESP MIDDLE", path);
 
+    const isHomeRoute = path === "/";
     const isPublicRoute =
-        path === "/" ||
         path.startsWith("/blog") ||
         path.startsWith("/about");
+
+// 👇 NEW: signed-in users hitting home go to /app
+    if (isHomeRoute && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/home";
+        return NextResponse.redirect(url);
+    }
+
+// unsigned users can see home
+    if (isHomeRoute) return supabaseResponse;
+
+// other public routes
+    if (isPublicRoute) return supabaseResponse;
 
     const isAuthOnlyRoute =
         path.startsWith("/dashboard") ||

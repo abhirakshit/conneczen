@@ -1,6 +1,7 @@
 import { simpleHandoffScenario } from './simpleHandoff';
 import { customerServiceRetailScenario } from './customerServiceRetail';
 import { chatSupervisorScenario } from './chatSupervisor';
+import { ioaScenario } from './ioa';
 
 import type { RealtimeAgent } from '@openai/agents/realtime';
 import addictionCoachScenario from "@/lib/agentConfigs/addictionCoach";
@@ -11,6 +12,7 @@ export const allAgentSets: Record<string, RealtimeAgent[]> = {
   // customerServiceRetail: customerServiceRetailScenario,
   // chatSupervisor: chatSupervisorScenario,
   "Addiction Coach": addictionCoachScenario,
+  "IOA": ioaScenario,
 };
 
 export const defaultAgentSetKey = 'Addiction Coach';

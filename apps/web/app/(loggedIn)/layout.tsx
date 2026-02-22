@@ -3,9 +3,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/authContext";
 import { useUserData } from "@/lib/store/useUserData";
-// import { useOnboardingCheck } from "@/hooks/useOnboardingCheck";
 import { useRouter, usePathname } from "next/navigation";
-import {NavbarHome} from "@/components/navbar-home";
 
 export default function LoggedInLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -15,56 +13,52 @@ export default function LoggedInLayout({ children }: { children: React.ReactNode
     const { fetchUserData, loading: userDataLoading, onboardingStatus } = useUserData();
 
     /**
-     * STEP 1 — User is logged in → Load their settings + schedules
+     * Load user data when user is available
      */
     useEffect(() => {
         if (user?.id) {
-            fetchUserData(user.id).then(r => console.info("*** Loading user data...**"));
+            fetchUserData(user.id);
         }
-    }, [user?.id]);
-
+    }, [user?.id, fetchUserData]);
 
     /**
-     * STEP 2 — Redirect:
-     * - if onboarding incomplete → force to /onboarding/*
-     * - if onboarding complete → force to /dashboard (unless already inside protected)
+     * Redirect logic:
+     * - /home handles routing to /onboarding or /dashboard
+     * - If user tries to access protected routes without completing onboarding → redirect
+     * - If user tries to access /onboarding after completing → redirect to /dashboard
      */
     useEffect(() => {
-        // Still loading auth or Zustand data?
         if (!user?.id || onboardingStatus === "pending" || userDataLoading) return;
 
         const isOnboardingPage = pathname.startsWith("/onboarding");
+        const isHomePage = pathname === "/home";
 
+        // Let /home handle its own routing
+        if (isHomePage) return;
+
+        // Incomplete onboarding: force to /onboarding (unless already there)
         if (onboardingStatus === "incomplete" && !isOnboardingPage) {
             router.replace("/onboarding");
             return;
         }
 
+        // Complete onboarding: redirect away from /onboarding
         if (onboardingStatus === "complete" && isOnboardingPage) {
             router.replace("/dashboard");
             return;
         }
-
-        // Otherwise: user is allowed to stay where they are
-    }, [user?.id, onboardingStatus, userDataLoading, pathname]);
-
+    }, [user?.id, onboardingStatus, userDataLoading, pathname, router]);
 
     /**
-     * STEP 3 — Unified loading screen
+     * Show loading while fetching user data
      */
     if (!user?.id || onboardingStatus === "pending" || userDataLoading) {
         return (
-            <div className="flex h-screen items-center justify-center text-gray-500">
+            <div className="flex h-screen items-center justify-center text-muted-foreground">
                 Loading...
             </div>
         );
     }
 
-
-    /**
-     * STEP 4 — Render everything inside (loggedIn)
-     */
-    return <>
-        {children}
-    </>;
+    return <>{children}</>;
 }

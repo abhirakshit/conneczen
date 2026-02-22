@@ -22,8 +22,15 @@ export function useHandleSessionHistory() {
 
     return content
       .map((c) => {
+        console.log(c.type);
         if (!c || typeof c !== "object") return "";
+        // User text input
         if (c.type === "input_text") return c.text ?? "";
+        // User audio input (transcript may come later)
+        if (c.type === "input_audio") return c.transcript ?? "";
+        // Assistant text response
+        if (c.type === "text") return c.text ?? "";
+        // Assistant audio response
         if (c.type === "audio") return c.transcript ?? "";
         return "";
       })
@@ -89,7 +96,9 @@ export function useHandleSessionHistory() {
     console.log("[handleHistoryAdded] ", item);
     if (!item || item.type !== 'message') return;
 
-    const { itemId, role, content = [] } = item;
+    const { role, content = [] } = item;
+    const itemId = item.id || item.itemId;
+
     if (itemId && role) {
       const isUser = role === "user";
       let text = extractMessageText(content);
@@ -115,11 +124,12 @@ export function useHandleSessionHistory() {
     items.forEach((item: any) => {
       if (!item || item.type !== 'message') return;
 
-      const { itemId, content = [] } = item;
+      const { content = [] } = item;
+      const itemId = item.id || item.itemId;
 
       const text = extractMessageText(content);
 
-      if (text) {
+      if (text && itemId) {
         updateTranscriptMessage(itemId, text, false);
       }
     });
@@ -193,6 +203,17 @@ export function useHandleSessionHistory() {
     handleTranscriptionCompleted,
     handleGuardrailTripped,
   });
+
+  // Update ref on every render to ensure handlers have fresh closures
+  handlersRef.current = {
+    handleAgentToolStart,
+    handleAgentToolEnd,
+    handleHistoryUpdated,
+    handleHistoryAdded,
+    handleTranscriptionDelta,
+    handleTranscriptionCompleted,
+    handleGuardrailTripped,
+  };
 
   return handlersRef;
 }

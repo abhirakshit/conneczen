@@ -28,6 +28,7 @@ import {customerServiceRetailCompanyName} from "@//lib/agentConfigs/customerServ
 import {chatSupervisorCompanyName} from "@//lib/agentConfigs/chatSupervisor";
 import {simpleHandoffScenario} from "@//lib/agentConfigs/simpleHandoff";
 import addictionCoachScenario from "@//lib/agentConfigs/addictionCoach";
+import ioaScenario from "@//lib/agentConfigs/ioa";
 
 // Map used by connect logic for scenarios defined via the SDK.
 const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
@@ -35,6 +36,7 @@ const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
     // customerServiceRetail: customerServiceRetailScenario,
     // chatSupervisor: chatSupervisorScenario,
     "Addiction Coach": addictionCoachScenario,
+    "IOA": ioaScenario,
 };
 
 import useAudioDownload from "@//hooks/useAudioDownload";

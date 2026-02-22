@@ -39,23 +39,35 @@ export const useUserData = create<UserDataState>((set, get) => ({
     loading: false,
 
     fetchUserData: async (userId) => {
-        console.log('Start Fetch Data...', userId);
         const supabase = createJSClient();
         set({ loading: true });
 
-        const { data: settings } = await supabase
-            .from("user_settings")
-            .select("*")
-            .eq("user_id", userId).single();
+        const [{ data: settings }, { data: schedules }, { data: identity }] =
+            await Promise.all([
+                supabase
+                    .from("user_settings")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .maybeSingle(),
 
-        const { data: schedules } = await supabase
-            .from("user_schedules")
-            .select("*")
-            .eq("user_id", userId);
+                supabase
+                    .from("user_schedules")
+                    .select("*")
+                    .eq("user_id", userId),
 
-        console.log('Fetched Data...', schedules, settings);
+                supabase
+                    .from("identity_profiles")
+                    .select("status")
+                    .eq("user_id", userId)
+                    .maybeSingle(),
+            ]);
 
-        const onboardingComplete = !!(settings && schedules?.length);
+        const hasConfirmedIdentity = identity?.status === "confirmed";
+        const hasSettings = !!settings;
+        const hasSchedules = !!(schedules && schedules.length > 0);
+
+        const onboardingComplete =
+            hasConfirmedIdentity && hasSettings && hasSchedules;
 
         set({
             settings: settings || null,
@@ -64,7 +76,6 @@ export const useUserData = create<UserDataState>((set, get) => ({
             onboardingComplete,
             loading: false,
         });
-        // console.log("Data Loaded", onboardingComplete);
     },
 
     updateSettings: async (updates) => {
@@ -88,5 +99,9 @@ export const useUserData = create<UserDataState>((set, get) => ({
         set({ schedules: schedules || [] });
     },
 
-    setOnboardingComplete: (value) => set({ onboardingComplete: value }),
+    setOnboardingComplete: (value) =>
+        set({
+            onboardingComplete: value,
+            onboardingStatus: value ? "complete" : "incomplete",
+        }),
 }));

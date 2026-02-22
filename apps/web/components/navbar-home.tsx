@@ -298,7 +298,7 @@ export const NavbarHome = React.forwardRef<HTMLElement, NavbarHomeProps>(
                 <div className="text-2xl">
                   {logo}
                 </div>
-                <span className="hidden font-bold text-xl sm:inline-block">Astro Buddy</span>
+                <span className="hidden font-bold text-xl sm:inline-block">Conneczen</span>
               </button>
               {/* Navigation menu */}
               {!isMobile && (

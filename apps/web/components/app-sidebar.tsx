@@ -36,7 +36,7 @@ const data = {
   },
   teams: [
     {
-      name: "Astro Buddy",
+      name: "Conneczen",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },

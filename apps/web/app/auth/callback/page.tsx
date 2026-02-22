@@ -7,7 +7,7 @@ import { createSSRClient } from "@/lib/supabase/client";
 export default function AuthCallback() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const next = searchParams.get("next") || "/dashboard";
+    const next = searchParams.get("next") || "/home";
 
     useEffect(() => {
         const supabase = createSSRClient();

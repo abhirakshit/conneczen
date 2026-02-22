@@ -95,3 +95,173 @@ Agents in `lib/agentConfigs/` follow this structure:
 ## Environment Setup
 
 Requires `.env.local` files in apps with Supabase and OpenAI credentials.
+
+
+## Core Design Principles (Non-Negotiable)
+
+### 1. Voice-First
+- Onboarding happens via **conversation**, not forms
+- AI agents interpret, summarize, and structure user input
+- UI only confirms or visualizes agent output
+
+### 2. Draft → Confirm Lifecycle
+- All meaningful user data starts as `draft`
+- Nothing is assumed permanent until **explicitly confirmed**
+- This applies to:
+    - identity profiles
+    - settings
+    - schedules
+    - goals
+    - visions
+
+### 3. Separation of Responsibility
+- **Onboarding Agent (IOA)** gathers identity
+- **Coaches** act only after identity is confirmed
+- No agent does therapy, diagnosis, or medical advice
+
+### 4. Minimal State, Explicit Transitions
+- Avoid hidden magic
+- State transitions must be:
+    - explicit
+    - inspectable
+    - reversible where possible
+
+---
+
+## Key Agents
+
+### IOA — Identity Onboarding Agent
+**Purpose**
+- Establish psychological grounding
+- Extract identity signals
+- Prepare user for coaching
+
+**Can**
+- Ask reflective questions
+- Create draft identity profiles
+- Handle vague or conflicted answers
+- Stall safely if user is not ready
+
+**Cannot**
+- Diagnose
+- Treat addiction or mental illness
+- Promise outcomes
+- Begin coaching proper
+
+### Coaches
+- Operate only after IOA completion
+- Receive **only structured handoff data**
+- Never re-interpret identity unless explicitly asked
+
+---
+
+## Identity Model
+
+Identity is **domain-scoped**, not global.
+
+Examples:
+- health
+- addiction
+- career
+- relationships
+- mental_health
+
+Each identity profile:
+- belongs to one domain
+- has a lifecycle: `draft → confirmed → archived`
+- may evolve, but only via explicit user consent
+
+---
+
+## Onboarding State Machine
+
+States:
+- `started`
+- `collecting`
+- `stalled`
+- `completed`
+
+Rules:
+- No skipping states
+- Stalled is a valid outcome
+- Completion requires confirmed identity + minimum settings
+
+---
+
+## Data Ownership Rules
+
+- Users own their data
+- Agents may propose, not impose
+- System must tolerate:
+    - contradiction
+    - uncertainty
+    - slow progress
+
+---
+
+## What NOT to Build
+
+Claude should actively resist:
+- Large monolithic schemas
+- Premature optimization
+- Multi-agent orchestration before IOA is stable
+- Hidden heuristics that override user intent
+- Silent auto-confirmation of drafts
+
+---
+
+## Acceptable Technical Stack Decisions
+
+- Next.js App Router
+- Supabase (Postgres + Auth)
+- Zustand for client state
+- Server-side enforcement of onboarding
+- WebRTC / Realtime voice for web
+- Twilio for phone (later)
+
+Do **not** introduce:
+- CMS platforms
+- workflow engines
+- heavy state machines
+  unless explicitly requested
+
+---
+
+## How to Extend the System Safely
+
+When adding a feature, ask:
+1. Does this respect draft → confirm?
+2. Does this increase or reduce cognitive load?
+3. Does an agent or a human own this decision?
+4. Is this reversible?
+
+If unclear, **pause and ask**.
+
+---
+
+## Tone and Behavior for AI Agents
+
+Agents must be:
+- calm
+- grounded
+- non-judgmental
+- precise
+- conservative in claims
+
+Avoid:
+- hype language
+- therapy framing
+- absolute statements
+- moralizing
+
+---
+
+## Final Rule
+
+If you (Claude) are unsure:
+- do not guess
+- do not invent
+- ask for clarification
+- or suggest a minimal, reversible step
+
+This system is designed to evolve slowly and safely.
