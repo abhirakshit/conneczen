@@ -1,3 +1,8 @@
+// Placeholder - layout temporarily disabled
+export default function ChartsLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
+}
+
 // 'use client'
 // import {useParams, useRouter} from "next/navigation";
 // import React, {useEffect} from "react";

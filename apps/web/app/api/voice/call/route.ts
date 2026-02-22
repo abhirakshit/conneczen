@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         // 2️⃣ Fetch user's phone number
         const { data: user, error } = await supabase
             .from("users")
-            .select("phone")
+            .select("phone, name")
             .eq("id", userId)
             .single();
 
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
         // 3) Fetch last session + transcript + analysis
         const { data: sessions } = await supabase
             .from("call_sessions")
-            .select("id")
+            .select("id, transcript")
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
             .limit(1);

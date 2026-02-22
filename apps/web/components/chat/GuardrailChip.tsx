@@ -4,7 +4,7 @@ import {
   CrossCircledIcon,
   ClockIcon,
 } from "@radix-ui/react-icons";
-import { GuardrailResultType } from "../types";
+import { GuardrailResultType } from "@/app/types";
 
 export interface ModerationChipProps {
   moderationCategory: string;

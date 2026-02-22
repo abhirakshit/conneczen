@@ -1,7 +1,7 @@
 // apps/web/lib/identity/identityService.ts
 
 import { createSSRClient } from "@/lib/supabase/client";
-import { CoachingDomain, RecordStatus } from "@/lib/types/types";
+import { CoachingDomain, RecordStatus } from "@/lib/types/identity";
 
 export type IdentityProfile = {
     id: string;

@@ -118,7 +118,7 @@ export default function SettingsPage() {
 
             if (error) throw error;
 
-            await refreshSchedules(userId);
+            if (userId) await refreshSchedules(userId);
             toast.success("Schedule updated.");
         } catch (err) {
             console.error(err);
@@ -131,7 +131,7 @@ export default function SettingsPage() {
             const { error } = await supabase.from("user_schedules").delete().eq("id", id);
             if (error) throw error;
 
-            await refreshSchedules(user?.id);
+            if (user?.id) await refreshSchedules(user.id);
             toast.success("Schedule deleted.");
         } catch (err) {
             console.error(err);

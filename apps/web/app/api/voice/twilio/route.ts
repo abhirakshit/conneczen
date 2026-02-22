@@ -61,7 +61,7 @@ export async function POST() {
                     },
                 },
             },
-        });
+        } as Parameters<typeof OpenAIRealtimeSIP.buildInitialConfig>[1]);
 
         // Create a client secret to start a SIP connection + chat session.
         const session = await openai.realtime.clientSecrets.create({

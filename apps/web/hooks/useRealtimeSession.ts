@@ -112,11 +112,11 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
 
     // history events - use wrapper functions to access ref.current at call time
     session.on("agent_handoff", handleAgentHandoff);
-    session.on("agent_tool_start", (...args: any[]) => historyHandlersRef.current.handleAgentToolStart(...args));
+    session.on("agent_tool_start", (...args: unknown[]) => (historyHandlersRef.current.handleAgentToolStart as (...a: unknown[]) => void)(...args));
     session.on("agent_tool_end", handleToolEnd);
-    session.on("history_updated", (...args: any[]) => historyHandlersRef.current.handleHistoryUpdated(...args));
-    session.on("history_added", (...args: any[]) => historyHandlersRef.current.handleHistoryAdded(...args));
-    session.on("guardrail_tripped", (...args: any[]) => historyHandlersRef.current.handleGuardrailTripped(...args));
+    session.on("history_updated", (...args: unknown[]) => (historyHandlersRef.current.handleHistoryUpdated as (...a: unknown[]) => void)(...args));
+    session.on("history_added", (...args: unknown[]) => (historyHandlersRef.current.handleHistoryAdded as (...a: unknown[]) => void)(...args));
+    session.on("guardrail_tripped", (...args: unknown[]) => (historyHandlersRef.current.handleGuardrailTripped as (...a: unknown[]) => void)(...args));
 
     // additional transport events
     session.on("transport_event", handleTransportEvent);

@@ -1,3 +1,8 @@
+// Placeholder - component temporarily disabled
+export default function ChartPage() {
+  return <div>Chart page coming soon</div>
+}
+
 // 'use client'
 //
 // import {

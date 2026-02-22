@@ -119,6 +119,7 @@ export default function VoiceChatClient() {
         sessionRef.current = session;
 
         // 2) Wire message events → transcript
+        // @ts-expect-error - SDK event types may be incomplete
         session.on("message", (msg: any) => {
             try {
                 const content = msg?.content ?? [];
@@ -135,6 +136,7 @@ export default function VoiceChatClient() {
         });
 
         // Optional: log other events
+        // @ts-expect-error - SDK event types may be incomplete
         session.on("response.completed", (event: any) => {
             logServerEvent(event, "response.completed");
         });

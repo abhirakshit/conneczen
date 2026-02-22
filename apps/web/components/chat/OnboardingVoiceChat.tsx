@@ -79,10 +79,10 @@ export default function OnboardingVoiceChat({
         onToolCall: (toolName, toolArgs) => {
             // Handle IOA tool calls
             if (toolName === "request_confirmation" && onConfirmationReady) {
-                onConfirmationReady(toolArgs);
+                onConfirmationReady(toolArgs as Parameters<typeof onConfirmationReady>[0]);
             }
             if (toolName === "save_identity_draft" && onIdentityDraftSaved) {
-                onIdentityDraftSaved(toolArgs);
+                onIdentityDraftSaved(toolArgs as Parameters<typeof onIdentityDraftSaved>[0]);
             }
         },
     });

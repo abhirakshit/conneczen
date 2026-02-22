@@ -15,4 +15,7 @@ export function createSSRClient() {
   );
 }
 
+// Alias for backward compatibility
+export { createSSRClient as createClient };
+
 

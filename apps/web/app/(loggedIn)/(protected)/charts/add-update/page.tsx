@@ -90,7 +90,7 @@ export default function ChartProfileForm() {
         })
     }, [chartInfo])
 
-    const onLoad = (ac) => setAutocomplete(ac);
+    const onLoad = (ac: google.maps.places.Autocomplete) => setAutocomplete(ac);
     const onPlaceChanged = async () => {
         if (!autocomplete) {
             console.error("Autocomplete load error...")
