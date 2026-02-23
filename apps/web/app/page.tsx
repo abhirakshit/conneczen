@@ -253,25 +253,41 @@ export default function LandingPage() {
             </div>
             <h2 className="text-3xl font-bold text-amber-950 mb-6">Grounded in behavioral science</h2>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <h3 className="font-semibold text-amber-900 mb-2">Implementation intentions</h3>
-                <p className="text-amber-700 text-sm">
-                  Setting specific "when-then" plans in the morning increases follow-through by 2-3x compared to vague goals.
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white/60 rounded-2xl p-6">
+                <h3 className="font-semibold text-amber-900 mb-2">Relationship over technique</h3>
+                <p className="text-amber-700 text-sm mb-3">
+                  Research consistently shows that across all human helping relationships, the differentiating factor of success is the <strong>quality of the relationship itself</strong> - not the method used.
                 </p>
+                <p className="text-teal-700 text-sm italic">"When someone listens, confusions that seem irremediable turn into clear streams." — Carl Rogers</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-amber-900 mb-2">Bookend reflection</h3>
-                <p className="text-amber-700 text-sm">
-                  Morning intention-setting and evening review create a feedback loop that accelerates self-awareness and behavior change.
+              <div className="bg-white/60 rounded-2xl p-6">
+                <h3 className="font-semibold text-amber-900 mb-2">Identity over goals</h3>
+                <p className="text-amber-700 text-sm mb-3">
+                  Real change happens at the identity level - shifting from "I'm trying to exercise" to "I'm someone who values my health." <strong>Identity-based change</strong> is far more sustainable.
                 </p>
+                <p className="text-teal-700 text-sm italic">"When clients move from 'I should' to 'I want to,' lasting change follows."</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-amber-900 mb-2">Voice processing</h3>
-                <p className="text-amber-700 text-sm">
-                  Speaking engages different cognitive pathways than writing. Many people gain clarity faster when they think out loud.
+              <div className="bg-white/60 rounded-2xl p-6">
+                <h3 className="font-semibold text-amber-900 mb-2">Autonomy fuels motivation</h3>
+                <p className="text-amber-700 text-sm mb-3">
+                  When support <strong>respects autonomy</strong> and meets psychological needs, people become more motivated and perceive themselves as more competent. Force, facts, and fear don't create lasting change.
                 </p>
+                <p className="text-teal-700 text-sm italic">"The ratio of change talk to resistance predicts outcomes."</p>
               </div>
+              <div className="bg-white/60 rounded-2xl p-6">
+                <h3 className="font-semibold text-amber-900 mb-2">Self-efficacy is everything</h3>
+                <p className="text-amber-700 text-sm mb-3">
+                  Self-efficacy - <strong>belief in your ability to change</strong> - is the strongest predictor of sustainable behavior change. It grows through real achievements, not willpower or shame.
+                </p>
+                <p className="text-teal-700 text-sm italic">"Nothing breeds success like success."</p>
+              </div>
+            </div>
+
+            <div className="bg-white/40 rounded-xl p-6 text-center">
+              <p className="text-amber-800">
+                Grounded in <strong>Motivational Interviewing</strong> — an evidence-based methodology with 30+ years of clinical research showing it works by evoking motivation that's already within you.
+              </p>
             </div>
           </div>
         </section>
