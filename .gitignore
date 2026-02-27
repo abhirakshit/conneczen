@@ -42,3 +42,4 @@ yarn-error.log*
 apps/web/next-env.d.ts
 
 .idea
+a.txt

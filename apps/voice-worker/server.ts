@@ -1,146 +1,182 @@
-import express from "express";
-import { WebSocketServer } from "ws";
-import http from "http";
-import {RealtimeAgent, RealtimeSession} from "@openai/agents-realtime";
+import {
+  WorkerOptions,
+  cli,
+  defineAgent,
+  multimodal,
+} from "@livekit/agents";
+import * as openai from "@livekit/agents-plugin-openai";
+import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
-import {TwilioRealtimeTransportLayer} from "@openai/agents-extensions";
-import {createClient} from "@supabase/supabase-js";
 
 dotenv.config();
-const PORT = process.env.PORT || 8080;
-const { OPENAI_API_KEY } = process.env;
-const SUPABASE_URL = process.env.SUPABASE_URL!;
-const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SECRET_KEY!;
 
+const LIVEKIT_URL = process.env.LIVEKIT_URL;
+const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
+const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SECRET_KEY;
 
-if (!OPENAI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
-    console.error("❌ Missing required environment variables.");
-    process.exit(1);
+if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
+  console.error("❌ Missing LiveKit environment variables");
+  process.exit(1);
 }
 
-const BASE_URL = process.env.VOICE_WORKER_BASE_URL;
-
-if (!BASE_URL) {
-    throw new Error("VOICE_WORKER_BASE_URL missing from environment");
+if (!OPENAI_API_KEY) {
+  console.error("❌ Missing OPENAI_API_KEY");
+  process.exit(1);
 }
 
-const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
+  console.error("❌ Missing Supabase environment variables");
+  process.exit(1);
+}
 
-const supabase = createClient(
-    SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE
-);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE);
 
-const WORKER_WS_URL =
-    BASE_URL.replace("https://", "wss://").replace("http://", "ws://") +
-    "/twilio-media";
+/**
+ * LiveKit Agents voice worker
+ *
+ * When a user joins a LiveKit room from the Flutter app:
+ * 1. This agent automatically joins the same room
+ * 2. Fetches call context (instructions) from Supabase
+ * 3. Starts a voice conversation using OpenAI Realtime
+ * 4. Saves transcript when call ends
+ */
+const agent = defineAgent({
+  entry: async (ctx) => {
+    console.log(`🟢 Agent entry for room: ${ctx.room.name}`);
 
-console.log("🔗 Using WS URL:", WORKER_WS_URL);
+    // Wait for the user to connect
+    const participant = await ctx.waitForParticipant();
+    console.log(`👤 Participant joined: ${participant.identity}`);
 
+    // Get room name to fetch context from Supabase
+    const roomName = ctx.room.name;
 
-// ---------- 2. Twilio → returns TwiML with <Stream> ----------
-app.post("/twilio/voice", (req, res) => {
-    // const userId = req.query.userId;
-    //
-    // const wsUrl = `wss://${req.headers.host}/media-stream?userId=${userId}`;
+    // Fetch instructions from call_context table
+    const { data: context, error } = await supabase
+      .from("call_context")
+      .select("instructions, user_id, call_type")
+      .eq("room_name", roomName)
+      .single();
 
-    const contextId = req.query.contextId;
-    const host = req.headers.host;
-
-    const wsUrl = `wss://${host}/media-stream?contextId=${contextId}`;
-
-    const twiml = `
-    <Response>
-      <Say>Starting your coaching session.</Say>
-      <Connect>
-        <Stream url="${wsUrl}" />
-      </Connect>
-    </Response>
-  `.trim();
-
-    res.type("text/xml").send(twiml);
-});
-
-// ---------- 3. Create HTTP server + WebSocket server ----------
-const server = http.createServer(app);
-
-// WebSocketServer bound to /media-stream
-const wss = new WebSocketServer({
-    server,
-    path: "/media-stream",
-});
-
-// ---------- 4. Handle Twilio media WebSocket and bridge to OpenAI ----------
-
-wss.on("connection", async (ws, req) => {
-    console.log("🟢 Twilio media WebSocket connected");
-    const params = new URLSearchParams(req.url?.split("?")[1]);
-    const contextId = params.get("contextId");
-
-    const { data: context } = await supabase
-        .from("call_context")
-        .select("instructions, user_id")
-        .eq("id", contextId)
-        .single();
-
-    const instructions = context?.instructions;
-
-    // This wrapper understands Twilio's event format: {event: "start" | "media" | "stop", ...}
-    const twilioTransportLayer = new TwilioRealtimeTransportLayer({
-        twilioWebSocket: ws,
-    });
-
-    const kaiAgent = new RealtimeAgent({
-        name: "Kai",
-        instructions: instructions
-    });
-
-    const session = new RealtimeSession(kaiAgent, {
-        transport: twilioTransportLayer,
-        model: "gpt-realtime",
-        config: {
-            audio: {
-                output: {
-                    voice: "verse", // or 'alloy' depending on model
-                },
-            },
-        },
-    });
-
-    session.on("error", (err) => {
-        console.error("❌ Realtime session error:", err);
-    });
-
-    session.on("history_added", (item) => {
-        // Later we can persist transcripts here
-        console.log("📝 History item:", JSON.stringify(item, null, 2));
-    });
-
-    try {
-        await session.connect({ apiKey: OPENAI_API_KEY! });
-        console.log("🤖 Connected to OpenAI Realtime");
-    } catch (err) {
-        console.error("❌ Failed to connect Realtime session:", err);
-        ws.close();
-        return;
+    if (error) {
+      console.error("❌ Failed to fetch call context:", error);
     }
 
-    ws.on("close", () => {
-        console.log("🔴 Twilio WebSocket closed");
-        session.close().catch((err: any) =>
-            console.error("Error closing Realtime session:", err),
-        );
+    const instructions = context?.instructions || getDefaultInstructions();
+    const userId = context?.user_id;
+    const callType = context?.call_type;
+
+    console.log(`📋 Call type: ${callType}, User: ${userId}`);
+
+    // Create multimodal agent with OpenAI Realtime
+    const assistant = new multimodal.MultimodalAgent({
+      model: new openai.realtime.RealtimeModel({
+        instructions,
+        voice: "verse", // calm, warm voice
+        turnDetection: {
+          type: "server_vad",
+          threshold: 0.5,
+          silenceDurationMs: 500,
+          prefixPaddingMs: 300,
+        },
+        modalities: ["audio", "text"],
+      }),
     });
 
-    ws.on("error", (err) => {
-        console.error("❌ WebSocket error:", err);
+    // Track conversation for transcript
+    const transcript: Array<{ role: string; content: string; timestamp: Date }> = [];
+
+    // Start the assistant
+    const session = await assistant.start(ctx.room, participant);
+    console.log("🤖 Voice assistant started");
+
+    // Handle user speech transcription
+    session.on("user_speech_committed", (text: string) => {
+      console.log(`👤 User: ${text}`);
+      transcript.push({ role: "user", content: text, timestamp: new Date() });
     });
+
+    // Handle assistant speech
+    session.on("agent_speech_committed", (text: string) => {
+      console.log(`🤖 Kai: ${text}`);
+      transcript.push({ role: "assistant", content: text, timestamp: new Date() });
+    });
+
+    // Wait for disconnect
+    await ctx.waitForDisconnect();
+    console.log(`🔴 Call ended for room: ${roomName}`);
+
+    // Save session to Supabase
+    if (userId && transcript.length > 0) {
+      try {
+        await saveSession(userId, callType, transcript);
+        console.log("💾 Session saved");
+      } catch (err) {
+        console.error("❌ Failed to save session:", err);
+      }
+    }
+
+    // Clean up call context
+    if (roomName) {
+      await supabase
+        .from("call_context")
+        .delete()
+        .eq("room_name", roomName);
+    }
+  },
 });
 
-// ---------- 5. Start server ----------
+/**
+ * Save the session transcript to Supabase
+ */
+async function saveSession(
+  userId: string,
+  callType: string | undefined,
+  transcript: Array<{ role: string; content: string; timestamp: Date }>
+) {
+  const transcriptText = transcript
+    .map((t) => `${t.role === "user" ? "User" : "Kai"}: ${t.content}`)
+    .join("\n\n");
 
-server.listen(PORT, () => {
-    console.log(`🚀 Voice worker listening on port ${PORT}`);
-});
+  await supabase.from("sessions").insert({
+    user_id: userId,
+    session_type: callType || "on_demand",
+    transcript: transcriptText,
+    started_at: transcript[0]?.timestamp.toISOString(),
+    ended_at: transcript[transcript.length - 1]?.timestamp.toISOString(),
+    // summary will be generated by analytics engine later
+  });
+}
+
+/**
+ * Default instructions if context not found
+ */
+function getDefaultInstructions(): string {
+  return `You are Kai, a supportive and calm voice coach.
+
+Your role is to help the user reflect through gentle conversation.
+You are NOT a therapist. You're a supportive companion.
+
+## Tone
+- Warm and calm
+- Non-judgmental
+- Brief responses (1-2 sentences)
+
+## Flow
+1. Greet them warmly
+2. Ask what's on their mind
+3. Listen and reflect back
+4. End when they feel heard
+
+Keep it conversational, not clinical.`;
+}
+
+// Run the agent
+cli.runApp(
+  new WorkerOptions({
+    agent,
+  })
+);

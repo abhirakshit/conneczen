@@ -23,9 +23,9 @@ yarn start     # Start production server
 ### Voice Worker (apps/voice-worker)
 ```bash
 cd apps/voice-worker
-yarn dev      # Start with ts-node-dev (hot reload)
-yarn build    # Compile TypeScript
-yarn start    # Run compiled server
+yarn install  # Install LiveKit Agents dependencies
+yarn dev      # Start LiveKit agent in dev mode
+yarn start    # Run agent in production mode
 ```
 
 ## Architecture Overview
@@ -34,8 +34,8 @@ yarn start    # Run compiled server
 ```
 conneczen/
 ├── apps/
-│   ├── web/              # Next.js 16 web application
-│   └── voice-worker/     # Express.js Twilio voice server
+│   ├── web/              # Next.js 16 web application + LiveKit token API
+│   └── voice-worker/     # LiveKit Agents voice server (Node.js)
 ├── packages/
 │   ├── agents/           # AI agent configurations (IOA, Analyst)
 │   ├── realtime/         # OpenAI Realtime API client
@@ -110,12 +110,20 @@ conneczen/
 
 ### Voice Worker Architecture
 
-Handles real-time voice coaching calls:
+Handles real-time voice coaching calls via LiveKit:
 ```
-Twilio Call → TwiML <Stream> → WebSocket /media-stream
-    → TwilioRealtimeTransportLayer → OpenAI Realtime API
-    → RealtimeAgent with instructions from Supabase
+Flutter App (livekit_client)
+    → Request token from /api/livekit/token
+    → Connect to LiveKit Cloud room
+    → LiveKit dispatches voice-worker agent
+    → Agent fetches instructions from Supabase (call_context)
+    → OpenAI Realtime API for voice conversation
+    → Transcript saved to sessions table on disconnect
 ```
+
+**Key endpoints:**
+- `POST /api/livekit/token` - Generate room token for Flutter app (apps/web)
+- Voice worker auto-joins rooms via LiveKit Agents (apps/voice-worker)
 
 ---
 
